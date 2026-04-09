@@ -317,7 +317,7 @@ func (b *realBuilder) buildFunctions(ctx context.Context, fromFS afero.Fs, proje
 			eventText := fmt.Sprintf("Building function %s", fnName)
 			eventCh.SendEvent(eventText, async.EventStatusStarted)
 
-			fnRepo := fmt.Sprintf("%s_%s", project.Spec.Repository, fnName)
+			fnRepo := fmt.Sprintf("%s-%s", project.Spec.Repository, fnName)
 			fnFS := afero.NewBasePathFs(fromFS, fnName)
 			fnBasePath := ""
 			if basePath != "" {

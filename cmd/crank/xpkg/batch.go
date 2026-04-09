@@ -189,7 +189,7 @@ func makeBaseImgMap(ctx context.Context, platforms []string, familyBaseImage str
 // of the addendum layers and then pushes the built multi-arch package
 // (if `len(c.Platforms) > 1`) to the specified package repository.
 func (c *batchCmd) processService(logger logging.Logger, baseImgMap map[string]v1.Image, s string) error {
-	imgs := make([]packageImage, 0, len(c.Platform))
+	imgs := make([]PackageImage, 0, len(c.Platform))
 	// image layers added on top of the base image by xpkg push to be reused
 	// across the platforms so that they are computed only once.
 	var addendumLayers []v1.Layer
@@ -219,7 +219,7 @@ func (c *batchCmd) processService(logger logging.Logger, baseImgMap map[string]v
 				return err
 			}
 		}
-		imgs = append(imgs, packageImage{Image: img, Path: fmt.Sprintf("%s-%s", s, p)})
+		imgs = append(imgs, PackageImage{Image: img, Path: fmt.Sprintf("%s-%s", s, p)})
 	}
 	if err := c.storePackage(logger, s, imgs); err != nil {
 		return err
@@ -233,7 +233,7 @@ func (c *batchCmd) processService(logger logging.Logger, baseImgMap map[string]v
 
 // Optionally stores the provider package under the configured directory,
 // if the service name exists in the c.StorePackage slice.
-func (c *batchCmd) storePackage(logger logging.Logger, s string, imgs []packageImage) error {
+func (c *batchCmd) storePackage(logger logging.Logger, s string, imgs []PackageImage) error {
 	found := slices.Contains(c.StorePackages, s)
 	if !found {
 		return nil
@@ -269,13 +269,14 @@ func (c *batchCmd) writePackage(logger logging.Logger, service, platform string,
 
 // pushWithRetry attempts to push the given package images up to the configured
 // retry count. If all retries fail then an error is returned.
-func (c *batchCmd) pushWithRetry(logger logging.Logger, imgs []packageImage, s string) error {
+func (c *batchCmd) pushWithRetry(logger logging.Logger, imgs []PackageImage, s string) error {
 	t := c.getPackageURL(s)
 	tries := c.PushRetry + 1
 	retryMsg := ""
+	pusher := NewImagePusher()
 	for i := range tries {
 		logger.Info(fmt.Sprintf("Pushing xpkg to %s.%s", t, retryMsg))
-		err := pushImages(logger, imgs, t)
+		err := pusher.PushImages(logger, imgs, t)
 		if err == nil {
 			break
 		}

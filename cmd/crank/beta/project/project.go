@@ -21,6 +21,7 @@ package project
 type Cmd struct {
 	Init  initCmd  `cmd:"" help:"Initialize a new project."`
 	Build buildCmd `cmd:"" help:"Build a project into Crossplane packages."`
+	Push  pushCmd  `cmd:"" help:"Push a project and its embedded functions as Crossplane packages."`
 	Run   runCmd   `cmd:"" help:"Build and run a project in a local dev control plane."`
 	Stop  stopCmd  `cmd:"" help:"Tear down a local dev control plane."`
 }

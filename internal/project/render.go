@@ -63,7 +63,11 @@ func IsFunctionDependency(dep pkgmetav1.Dependency) bool {
 // FunctionPackageRef returns the OCI ref for a function dependency.
 func FunctionPackageRef(dep pkgmetav1.Dependency) string {
 	if dep.Function != nil {
-		return *dep.Function
+		ref := *dep.Function
+		if dep.Version != "" && !hasReferenceIdentifier(ref) {
+			ref = fmt.Sprintf("%s:%s", ref, dep.Version)
+		}
+		return ref
 	}
 	if dep.Package == nil {
 		return ""
@@ -73,6 +77,15 @@ func FunctionPackageRef(dep pkgmetav1.Dependency) string {
 		ref = fmt.Sprintf("%s:%s", ref, dep.Version)
 	}
 	return ref
+}
+
+func hasReferenceIdentifier(ref string) bool {
+	if strings.Contains(ref, "@") {
+		return true
+	}
+
+	last := ref[strings.LastIndex(ref, "/")+1:]
+	return strings.Contains(last, ":")
 }
 
 // LoadProjectFunctions loads function manifests from a project's DependsOn
